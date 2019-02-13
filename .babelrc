@@ -1,0 +1,23 @@
+{
+  "plugins": [
+    "@babel/plugin-proposal-object-rest-spread"
+  ],
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "browsers": [
+            "last 2 Chrome versions",
+            "last 2 Firefox versions"
+          ]
+        }
+      }
+    ]
+  ],
+  "env": {
+    "test": {
+      "presets": ["power-assert"]
+    }
+  }
+}

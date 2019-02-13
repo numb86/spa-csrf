@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>激安スマホ</title>
+</head>
+<body>
+  <p style="color: red; font-size: 2em">↓激安スマホ↓</p>
+  <a href="./otoku.html" style="color: blue; font-size: 2em;">お得な情報はこちらから</a>
+  <p style="color: blue; font-size: 2em">↑格安スマホ↑</p>
+  <hr>
+  <!-- 以下、解説 -->
+  <b>これは <span style="color: #3CB371;">CSRF対策が行われているAPIへの攻撃ページ</span> です</b>
+  <p>
+    「お得な情報はこちらから」のリンクを踏むとフォームからポストを送信してCSRF攻撃を試みますが、失敗します。<br>
+    APIサーバーで指定している独自ヘッダを付加していないという理由でリクエストが失敗するからです。<br>
+    フォームでは独自ヘッダをつけられないため、独自ヘッダを義務付けることで、フォームからのCSRF攻撃を防ぐことが出来ます。<br>
+    <a href="<%= MY_PAGE_URL %>">マイページ</a>にアクセスし、「購入数」が変化していないことを確認してください。
+  </p>
+  <p>
+    オリジン間の非同期通信では <b>Access-Control-Allow-Origin</b> で許可されていないオリジンは、レスポンスを得られません。<br>
+    以下のボタンを押すと、購入数を 999 プラスするためのリクエストをAPIサーバーに投げますが、プリフライトの条件を満たしているので、プリフライトリクエストが発生します。<br>
+    そのため、 <b>Access-Control-Allow-Origin</b> で許可されていないこのオリジンからのリクエストは、プリフライトリクエストで終了するため、実際のリクエスト（今回の場合は「購入数を 999 プラスするためのリクエスト」）は発生しません。<br>
+    <button id="add-custom-header">throw preflight cross-origin request</button>
+  </p>
+  <p>
+    プリフライトリクエストの条件を満たさない場合は、実際のリクエストがいきなり投げられます。<br>
+    しかし今回の攻撃対象のAPIサーバーはまず、独自ヘッダが付加されているかチェックし、付加していない場合はその時点でリクエストを失敗させるように実装してあります。<br>
+    以下のボタンを押すとCSRF攻撃を仕掛けますが、プリフライトリクエストになるのを避けるために、独自ヘッダはつけていません。<br>
+    そのため、プリフライトリクエストではなく実際のリクエストがいきなり投げられることになりますが、独自ヘッダをつけていないので必ずリクエストは失敗し、CSRFによって不正な操作を行われることはありません。<br>
+    <button id="no-custom-header">throw simple cross-origin request</button>
+  </p>
+  <p>
+    ウェブストレージはオリジン単位で管理されるため、正規のページのウェブストレージがこのページで見られる恐れはありません。<br>
+    <button id="storage">show localStorage</button>
+  </p>
+  <script>
+    const addCustomHeaderBtn = document.getElementById('add-custom-header');
+    const noCustomHeader = document.getElementById('no-custom-header');
+    const storageBtn = document.getElementById('storage');
+
+    addCustomHeaderBtn.addEventListener('click', async () => {
+      const fetchUrl = 'http://localhost:8010/cookie/increment'
+      const fetchOptions = {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
+        },
+        body: JSON.stringify({amount: 999}),
+      };
+      try {
+        const response = await fetch(fetchUrl, fetchOptions);
+        const json = await response.json();
+        alert('success', json);
+      } catch (e) {
+        alert(e);
+      }
+    }, false);
+
+    // カスタムヘッダの付与などの「プリフライトリクエスト発生条件」を満たしていないため
+    // プリフライトリクエストが発生しない
+    noCustomHeader.addEventListener('click', async () => {
+      const fetchUrl = 'http://localhost:8010/cookie/increment'
+      const fetchOptions = {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        body: JSON.stringify({amount: 999}),
+      };
+      try {
+        const response = await fetch(fetchUrl, fetchOptions);
+        const json = await response.json();
+        alert('success', json);
+      } catch (e) {
+        alert(e);
+      }
+    }, false);
+    
+    storageBtn.addEventListener('click', () => {
+      alert(localStorage.getItem('user'));
+    }, false);
+
+</script>
+</body>
+</html>
