@@ -53,7 +53,7 @@
   "dependencies": {
     "connect-history-api-fallback": "^1.6.0",
     "ejs": "^2.6.1",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-session": "^1.15.6",
     "vue": "^2.5.16",
     "vue-router": "^3.0.2",
